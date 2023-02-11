@@ -1,0 +1,71 @@
+# models.py
+from django.db import models
+
+class ClothingItem(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='wardrobe_items/')
+    category = models.CharField(max_length=50)
+    color = models.CharField(max_length=50)
+    occasion = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+# views.py
+from django.shortcuts import render, redirect
+from .models import ClothingItem
+
+def wardrobe_list(request):
+    items = ClothingItem.objects.all()
+    return render(request, 'wardrobe/wardrobe_list.html', {'items': items})
+
+def wardrobe_add(request):
+    if request.method == 'POST':
+        item = ClothingItem(
+            name=request.POST['name'],
+            image=request.FILES['image'],
+            category=request.POST['category'],
+            color=request.POST['color'],
+            occasion=request.POST['occasion']
+        )
+        item.save()
+        return redirect('wardrobe_list')
+    return render(request, 'wardrobe/wardrobe_add.html')
+
+# wardrobe_list.html
+<h1>Virtual Wardrobe</h1>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Image</th>
+        <th>Category</th>
+        <th>Color</th>
+        <th>Occasion</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td><img src="{{ item.image.url }}" height="50"></td>
+        <td>{{ item.category }}</td>
+        <td>{{ item.color }}</td>
+        <td>{{ item.occasion }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{% url 'wardrobe_add' %}">Add Item</a>
+
+# wardrobe_add.html
+<h1>Add Clothing Item</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name"><br><br>
+    <label for="image">Image:</label>
+    <input type="file" id="image" name="image"><br><br>
+    <label for="category">Category:</label>
+    <input type="text" id="category" name="category"><br><br>
+    <label for="color">Color:</label>
+    <input type="text" id="color" name="color"><br><br>
+    <label for="occasion">Occasion:</label>
+    <input type="text" id="occasion" name="occasion"><br><br>
+    <input type="submit" value="
